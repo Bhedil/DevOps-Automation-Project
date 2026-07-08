@@ -25,7 +25,6 @@
       name:
         - fontconfig
         - openjdk-21-jre
-        - jenkins
       state: present
       update_cache: yes  # This replaces running 'sudo apt update' manually
 
