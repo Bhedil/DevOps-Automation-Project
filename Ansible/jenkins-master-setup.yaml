@@ -1,0 +1,36 @@
+--- 
+- hosts: jenkins-master
+  become: true
+  tasks:
+  - name: Ensure keyrings directory exists #Create directory name keyrings. If it exist ignore, if it doesnt create
+    ansible.builtin.file:
+      path: /etc/apt/keyrings
+      state: directory
+      mode: '0755'
+
+  - name: Download Jenkins GPG keyring #Download the jenkins armor/gpg key securely
+    ansible.builtin.get_url:
+      url: https://pkg.jenkins.io/debian-stable/jenkins.io-2026.key
+      dest: /etc/apt/keyrings/jenkins-keyring.asc
+      mode: '0644'
+
+  - name: Add Jenkins apt repository #Adds the Jenkins repository to my sources list on ubuntu server
+    ansible.builtin.apt_repository:
+      repo: "deb [signed-by=/etc/apt/keyrings/jenkins-keyring.asc] https://pkg.jenkins.io/debian-stable binary/"
+      state: present
+      filename: jenkins
+
+  - name: Install Fontconfig, OpenJDK 21, and Jenkins #Updates the cache and installs Java, fontconfig, and Jenkins all at once
+    ansible.builtin.apt:
+      name:
+        - fontconfig
+        - openjdk-21-jre
+        - jenkins
+      state: present
+      update_cache: yes  # This replaces running 'sudo apt update' manually
+
+  - name: Start Jenkins service and enable to start at a boot time
+    ansible.builtin.service:
+      name: jenkins
+      state: started
+      enabled: yes
