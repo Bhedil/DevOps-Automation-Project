@@ -20,7 +20,7 @@
       state: present
       filename: jenkins
 
-  - name: Install Fontconfig, OpenJDK 21, and Jenkins #Updates the cache and installs Java, fontconfig, and Jenkins all at once
+  - name: Install Fontconfig, and OpenJDK 21 #Updates the cache and installs Java, fontconfig all at once
     ansible.builtin.apt:
       name:
         - fontconfig
@@ -28,6 +28,17 @@
         - jenkins
       state: present
       update_cache: yes  # This replaces running 'sudo apt update' manually
+
+  - name: Install Jenkins #Install Jenkins tasks separately because of the race condition between java package to install
+    ansible.builtin.apt:
+      name:
+        - jenkins
+      state: present
+
+  # Refresh and Start systemd
+  - name: Force systemd to reload config files
+    ansible.builtin.systemd_service:
+      daemon_reload: yes
 
   - name: Start Jenkins service and enable to start at a boot time
     ansible.builtin.service:
