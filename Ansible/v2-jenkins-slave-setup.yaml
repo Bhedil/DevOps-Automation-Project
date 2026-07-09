@@ -31,7 +31,15 @@
         name: docker.io
         state: present
     
-    - name: start docker services
+    - name: start docker services and start at a boot time
       ansible.builtin.service:
         name: docker
         state: started
+        enabled: yes
+
+    - name: give 777 permissions on /var/run/docker.sock
+      ansible.builtin.file:
+        path: /var/run/docker.sock
+        state: file
+        mode: 0777
+    
