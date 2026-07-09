@@ -1,0 +1,37 @@
+---
+- hosts : jenkins-slave
+  become: true
+  tasks:
+
+    - name: update ubuntu repo and cache
+      ansible.builtin.apt:
+        update_cache: yes
+        force_apt_get: yes
+        cache_valid_time: 3600
+
+    - name: Install Java
+      ansible.builtin.apt:
+        name:
+          - openjdk-21-jre
+        state: present
+
+    - name: download maven packages
+      ansible.builtin.get_url:
+        url: https://dlcdn.apache.org/maven/maven-3/3.9.16/binaries/apache-maven-3.9.16-bin.tar.gz
+        dest: /opt
+
+    - name: extract maven package
+      ansible.builtin.unarchive:
+        src: /opt/apache-maven-3.9.16-bin.tar.gz
+        dest: /opt
+        remote_src: yes
+
+    - name: install docker
+      ansible.builtin.apt:
+        name: docker.io
+        state: present
+    
+    - name: start docker services
+      ansible.builtin.service:
+        name: docker
+        state: started
