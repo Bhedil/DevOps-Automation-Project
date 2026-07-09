@@ -2,7 +2,14 @@ provider "aws" {
     region = "ap-southeast-3"
 }
 
+variable "use_ignore_changes" {
+  type    = bool
+  default = true
+}
+
 resource "aws_instance" "demo-server" {
+    # 1. Handle the true/false switch entirely inside for_each
+    for_each = var.use_ignore_changes ? toset(["jenkins-master", "build-slave", "ansible"]) : toset([])
     ami = "ami-039f9d16a13e3a0a7"
     instance_type = "t3.micro"
     key_name = "ansible-lab"
@@ -10,10 +17,20 @@ resource "aws_instance" "demo-server" {
     vpc_security_group_ids = [aws_security_group.demo-sg.id]
     subnet_id = aws_subnet.dpp-public-subnet-01.id
 
-    for_each = toset(["jenkins-master", "build-slave", "ansible"])
     tags = {
         Name = "${each.key}"
     }
+
+    # ignore the changes of this resource based on the tags created manually in the console
+    # lifecycle {
+    #     ignore_changes = [tags]
+    # }
+
+    # This completely freezes the instances from any further Terraform updates
+    lifecycle {
+        ignore_changes = all
+    }
+
 }
 
 resource "aws_security_group" "demo-sg" {
@@ -103,6 +120,7 @@ resource "aws_route_table_association" "dpp-rta-public-subnet-02" {
     route_table_id = aws_route_table.dpp-public-rt.id
 }
 
+//If i want to destroy the eks cluster, i just need to comment this 2 modules below and apply it using terraform apply not destroy
 module "sgs" {
     source = "../sg_eks"
     vpc_id = aws_vpc.dpp-vpc.id
