@@ -87,11 +87,11 @@ environment {
             }   
         }
 
-        stage("Deploy"){
-            steps {
-                sh "./deploy.sh"
-            }
-        }   
+    //     stage("Deploy"){
+    //         steps {
+    //             sh "./deploy.sh"
+    //         }
+    //     }   
 
-    }
+    // }
 }
